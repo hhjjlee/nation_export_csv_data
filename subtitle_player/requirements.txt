@@ -1,0 +1,9 @@
+# 한글자막 플레이어 실행에 필요한 패키지
+PySide6>=6.6            # 화면 + 동영상 재생 (Qt Multimedia, FFmpeg 내장)
+faster-whisper>=1.1.0   # 음성 인식 (Whisper, CTranslate2)
+av>=11                  # 오디오 디코딩 (FFmpeg)
+numpy>=1.24
+anthropic>=2.10         # Claude 번역 (선택 사항이지만 함께 설치)
+
+# NVIDIA GPU로 더 빠르게 인식하려면 (선택):
+#   pip install nvidia-cublas-cu12 "nvidia-cudnn-cu12==9.*"

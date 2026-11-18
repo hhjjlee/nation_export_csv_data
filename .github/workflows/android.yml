@@ -1,0 +1,58 @@
+name: Android APK (한글자막 플레이어)
+
+on:
+  # 같은 저장소의 PR 브랜치는 push로 이미 빌드되므로 pull_request 이벤트는 쓰지 않는다 (중복 빌드 방지)
+  push:
+    paths:
+      - "android_app/**"
+      - ".github/workflows/android.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: android_app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: 단위 테스트
+        run: ./gradlew --no-daemon testDebugUnitTest -Pkosub.native=false
+
+      - name: APK 빌드 (whisper.cpp 포함)
+        run: ./gradlew --no-daemon assembleRelease
+
+      - name: APK 이름 정리
+        run: |
+          mkdir -p dist
+          cp app/build/outputs/apk/release/app-release.apk dist/KoSubPlayer-${GITHUB_SHA::7}.apk
+          ls -la dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: KoSubPlayer-apk
+          path: android_app/dist/*.apk
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-reports
+          path: android_app/app/build/reports/tests/
+          if-no-files-found: ignore
