@@ -25,7 +25,14 @@ android {
         if (buildNative) {
             externalNativeBuild {
                 cmake {
-                    arguments += listOf("-DANDROID_STL=c++_static", "-DCMAKE_BUILD_TYPE=Release")
+                    // 갤럭시 S25(Snapdragon 8 Elite) 등 2019년 이후 폰의 ARM dotprod/fp16 명령어로 음성 인식을 빠르게
+                    arguments += listOf(
+                        "-DANDROID_STL=c++_static",
+                        "-DCMAKE_BUILD_TYPE=Release",
+                        "-DGGML_CPU_ARM_ARCH=armv8.2-a+dotprod+fp16",
+                    )
+                    cFlags += "-march=armv8.2-a+dotprod+fp16"
+                    cppFlags += "-march=armv8.2-a+dotprod+fp16"
                 }
             }
         }
