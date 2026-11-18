@@ -218,6 +218,12 @@ class SubtitlePanel(QWidget):
     def set_units(self, units: Iterable[Unit]) -> None:
         self.model.set_units(units)
 
+    def set_columns(self, show_source: bool, show_korean: bool) -> None:
+        """번역 안 함 모드에서는 '한국어' 열을, 원래 한국어 영상에서는 '원문' 열을 숨긴다."""
+        self.table.setColumnHidden(COL_SRC, not show_source)
+        self.table.setColumnHidden(COL_KO, not show_korean)
+        self._resize_timer.start()
+
     def upsert(self, units: Iterable[Unit]) -> None:
         self.model.upsert(units)
 

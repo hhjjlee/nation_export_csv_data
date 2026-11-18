@@ -733,9 +733,12 @@ class MainWindow(QMainWindow):
         return "ko"
 
     def _rebuild_cues(self) -> None:
-        self.cues = build_cues(self.units.values(), mode=self._display_mode())
+        mode = self._display_mode()
+        self.cues = build_cues(self.units.values(), mode=mode)
         self._cue_starts = [c.start for c in self.cues]
         self._current_cue_id = -2  # 다음 tick에서 다시 그리기
+        korean_source = (self.language or "") == "ko" or bool(self.external_srt)
+        self.panel.set_columns(show_source=not korean_source, show_korean=mode == "ko")
 
     def _cue_at(self, t: float) -> Optional[Cue]:
         i = bisect.bisect_right(self._cue_starts, t) - 1

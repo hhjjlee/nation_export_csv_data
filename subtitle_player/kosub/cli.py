@@ -37,7 +37,7 @@ def _printer(prefix: str):
             dur = ev.get("duration") or 0
             if dur:
                 covered = sum(b - a for a, b in ev.get("intervals") or [])
-                pct = int(100 * covered / dur)
+                pct = min(100, int(round(100 * covered / dur)))
                 if pct != state.get("cov_pct") and (pct % 10 == 0 or pct == 100):
                     state["cov_pct"] = pct
                     speed = ev.get("speed")

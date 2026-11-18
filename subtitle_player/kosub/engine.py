@@ -31,6 +31,7 @@ Emit = Callable[[Dict[str, Any]], None]
 CHUNK_SECONDS = 120.0
 SAVE_INTERVAL = 3.0
 MAX_TRANSLATE_ATTEMPTS = 6
+RETRY_BASE_SECONDS = 5.0  # 번역 실패 시 5, 10, 20, 40, 60초 뒤 다시 시도
 
 
 @dataclass
@@ -141,6 +142,13 @@ class SubtitleJob:
         except Exception:  # 출력 채널 문제로 작업이 죽지 않게
             log.exception("이벤트 전송 실패: %s", ev)
 
+    def _fail(self, text: str) -> None:
+        """치명적 오류를 알리고 작업을 멈춘다. 지금까지 만든 자막은 저장된다."""
+        self._emit("error", text=text, fatal=True)
+        self._cancel.set()
+        with self._cv:
+            self._cv.notify_all()
+
     def _status(self, phase: str, text: str) -> None:
         self._emit("status", phase=phase, text=text)
 
@@ -155,12 +163,14 @@ class SubtitleJob:
             self._run()
         except Exception as exc:
             log.exception("자막 작업 실패")
-            self._emit("error", text=f"자막 생성 중 오류가 발생했습니다: {exc}", fatal=True)
+            self._fail(f"자막 생성 중 오류가 발생했습니다: {exc}")
         finally:
             with self._cv:
                 self._transcribing = False
                 self._cv.notify_all()
             if self._translator_thread is not None and self._cancel.is_set():
+                with self._cv:
+                    self._cv.notify_all()
                 self._translator_thread.join(5)
             self._save(force=True)
             self.finished.set()
@@ -184,10 +194,10 @@ class SubtitleJob:
         try:
             info = probe(self.video)
         except Exception as exc:
-            self._emit("error", text=f"파일을 열 수 없습니다: {exc}", fatal=True)
+            self._fail(f"파일을 열 수 없습니다: {exc}")
             return
         if info.audio_streams == 0:
-            self._emit("error", text="이 파일에는 오디오 트랙이 없어 자막을 만들 수 없습니다.", fatal=True)
+            self._fail("이 파일에는 오디오 트랙이 없어 자막을 만들 수 없습니다.")
             return
         with self._lock:
             if info.duration:
@@ -222,7 +232,7 @@ class SubtitleJob:
                 try:
                     reader = AudioReader(self.video, self.audio_track)
                 except NoAudioError as exc:
-                    self._emit("error", text=str(exc), fatal=True)
+                    self._fail(str(exc))
                     return
                 self._transcribe_all(reader)
         finally:
@@ -242,7 +252,7 @@ class SubtitleJob:
         try:
             transcriber = self.model_cache.get(self.options, status=self._status, progress=self._download_progress)
         except ModelDownloadError as exc:
-            self._emit("error", text=str(exc), fatal=True)
+            self._fail(str(exc))
             return
         self._emit(
             "model",
@@ -531,7 +541,7 @@ class SubtitleJob:
         self._attempts[uid] = n
         if n >= limit:
             return  # 포기 (다음에 동영상을 열면 다시 시도)
-        self._retry[uid] = (n, time.monotonic() + min(60.0, 5.0 * 2 ** (n - 1)))
+        self._retry[uid] = (n, time.monotonic() + min(60.0, RETRY_BASE_SECONDS * 2 ** (n - 1)))
 
     def _context_before(self, unit: Unit) -> List[Tuple[str, str]]:
         earlier = [u for u in self.state.units.values() if u.end <= unit.start + 0.01 and u.ko]

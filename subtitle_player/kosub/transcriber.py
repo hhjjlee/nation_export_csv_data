@@ -208,6 +208,12 @@ class Transcriber:
             return download_model(name, local_files_only=True, cache_dir=cache)
         except Exception:
             pass
+        try:  # "HF_TOKEN을 설정하라"는 경고 등은 숨긴다
+            from huggingface_hub.utils import logging as hf_logging
+
+            hf_logging.set_verbosity_error()
+        except Exception:
+            pass
         repo, size_mb, _desc = MODEL_INFO.get(name, (name, 0, ""))
         status("download", f"음성 인식 모델 내려받는 중 ({name}, 약 {size_mb} MB) — 처음 한 번만")
         result: dict = {}
@@ -215,7 +221,17 @@ class Transcriber:
 
         def run() -> None:
             try:
-                result["path"] = download_model(name, cache_dir=cache)
+                try:
+                    result["path"] = download_model(name, cache_dir=cache)
+                except Exception as first:  # noqa: BLE001
+                    # 회사 방화벽 등으로 HF의 Xet 저장소 CDN만 막힌 경우 일반 다운로드로 다시 시도
+                    import huggingface_hub.constants as hf_constants
+
+                    if hf_constants.HF_HUB_DISABLE_XET:
+                        raise
+                    log.warning("모델 다운로드 실패(%s) — Xet 없이 다시 시도", first)
+                    hf_constants.HF_HUB_DISABLE_XET = True
+                    result["path"] = download_model(name, cache_dir=cache)
             except BaseException as exc:  # noqa: BLE001 - 스레드 밖으로 전달
                 result["error"] = exc
             finally:

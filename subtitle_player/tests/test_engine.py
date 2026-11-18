@@ -188,3 +188,68 @@ def test_video_without_audio_reports_error(tmp_path):
     SubtitleJob(str(out), _opts(), rec).run()
     errors = rec.of("error")
     assert errors and "오디오" in errors[0]["text"]
+
+
+class _FailingTranslator:
+    name = "failing"
+    label = "실패하는 번역기"
+    batch_size = 10
+
+    def __init__(self, exc):
+        self.exc = exc
+        self.calls = 0
+
+    def translate(self, texts, src_lang, context=()):
+        self.calls += 1
+        raise self.exc
+
+
+def test_translation_failures_are_retried_then_saved_as_source(make_video, monkeypatch):
+    from kosub import engine, translators
+
+    failing = _FailingTranslator(translators.TranslatorError("네트워크 오류"))
+    monkeypatch.setattr(translators, "make_translator", lambda opts: failing)
+    monkeypatch.setattr(engine, "RETRY_BASE_SECONDS", 0.01)
+    video = make_video(tone_pattern(12.0, on=2.5, off=0.5), "tfail.mp4")
+    rec = Recorder()
+    SubtitleJob(str(video), _opts(), rec).run()
+    done = rec.of("done")[-1]
+    assert not done["complete"] and "번역하지 못한" in done["message"]
+    assert failing.calls >= 2  # 다시 시도했음
+    assert rec.of("warning")
+    cues = parse_srt(Path(video).with_name("tfail.ko.srt").read_text("utf-8-sig"))
+    assert cues and all(c.text.startswith("Fake sentence") for c in cues)  # 원문으로 채워 저장
+    st = JobState.load(state_path_for(str(video)))
+    assert st.transcribed and not st.complete  # 다음에 열면 번역을 이어서 한다
+
+
+def test_bad_api_key_stops_translation_but_keeps_transcribing(make_video, monkeypatch):
+    from kosub import translators
+
+    failing = _FailingTranslator(translators.TranslatorFatalError("Claude API 키가 올바르지 않습니다."))
+    monkeypatch.setattr(translators, "make_translator", lambda opts: failing)
+    video = make_video(tone_pattern(12.0, on=2.5, off=0.5), "badkey.mp4")
+    rec = Recorder()
+    SubtitleJob(str(video), _opts(translator="claude"), rec).run()
+    errors = rec.of("error")
+    assert errors and not errors[0]["fatal"] and "API 키" in errors[0]["text"]
+    assert failing.calls == 1  # 설정 오류는 반복해서 시도하지 않는다
+    st = JobState.load(state_path_for(str(video)))
+    assert st.transcribed and len(st.units) >= 3
+
+
+def test_model_download_failure_is_reported_once(make_video, monkeypatch):
+    from kosub.transcriber import ModelDownloadError
+
+    video = make_video(tone_pattern(6.0), "nomodel.mp4")
+    rec = Recorder()
+    job = SubtitleJob(str(video), _opts(), rec)
+
+    def fail(*a, **k):
+        raise ModelDownloadError("음성 인식 모델을 내려받지 못했습니다.")
+
+    monkeypatch.setattr(job.model_cache, "get", fail)
+    job.run()
+    errors = rec.of("error")
+    assert len(errors) == 1 and errors[0]["fatal"]
+    assert not rec.of("done")  # '음성이 감지되지 않음' 같은 잘못된 완료 안내가 없어야 한다

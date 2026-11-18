@@ -128,3 +128,56 @@ def test_make_translator_choices(monkeypatch):
     assert isinstance(translators.make_translator({"translator": "google"}), GoogleTranslator)
     tr = translators.make_translator({"translator": "claude", "claude_api_key": "sk-test", "claude_model": "claude-sonnet-5-5"})
     assert isinstance(tr, ClaudeTranslator) and tr.model == "claude-sonnet-5-5"
+
+
+def test_claude_with_real_sdk_against_local_server(monkeypatch):
+    """실제 anthropic SDK로 로컬 가짜 서버에 요청해 본문 형식과 응답 해석을 확인한다 (외부 통신 없음)."""
+    import http.server
+
+    monkeypatch.setenv("NO_PROXY", "127.0.0.1,localhost")
+    monkeypatch.setenv("no_proxy", "127.0.0.1,localhost")
+    import threading
+
+    captured = {}
+
+    class Handler(http.server.BaseHTTPRequestHandler):
+        def do_POST(self):
+            body = self.rfile.read(int(self.headers.get("Content-Length", 0)))
+            captured["path"] = self.path
+            captured["headers"] = {k.lower(): v for k, v in self.headers.items()}
+            captured["body"] = json.loads(body)
+            lines = json.loads(captured["body"]["messages"][0]["content"])["lines"]
+            text = json.dumps({"translations": [{"id": l["id"], "ko": "번역:" + l["text"]} for l in lines]}, ensure_ascii=False)
+            data = json.dumps({
+                "id": "msg_local", "type": "message", "role": "assistant", "model": "claude-opus-5-5",
+                "content": [{"type": "text", "text": text}],
+                "stop_reason": "end_turn", "stop_sequence": None,
+                "usage": {"input_tokens": 10, "output_tokens": 5},
+            }).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
+
+        def log_message(self, *args):
+            pass
+
+    server = http.server.HTTPServer(("127.0.0.1", 0), Handler)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    try:
+        tr = ClaudeTranslator(api_key="sk-ant-test", model="claude-opus-5-5", effort="low")
+        tr.client = tr.client.with_options(base_url=f"http://127.0.0.1:{server.server_port}", max_retries=0)
+        out = tr.translate(["Hello.", "See you."], "en")
+    finally:
+        server.shutdown()
+    assert out == ["번역:Hello.", "번역:See you."]
+    body = captured["body"]
+    assert captured["path"].startswith("/v1/messages")
+    assert body["model"] == "claude-opus-5-5" and body["fallbacks"] == "default"
+    assert body["output_config"]["effort"] == "low"
+    assert body["output_config"]["format"]["type"] == "json_schema"
+    assert "server-side-fallback-2026-07-01" in captured["headers"].get("anthropic-beta", "")
+    # API 키는 x-api-key(또는 SDK 설정에 따라 Authorization) 헤더로 전달된다
+    sent = captured["headers"].get("x-api-key", "") + captured["headers"].get("authorization", "")
+    assert "sk-ant-test" in sent
