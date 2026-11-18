@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="model_entries">
+        <item>tiny — 가장 빠름 (32MB)</item>
+        <item>base — 빠름 (60MB)</item>
+        <item>small — 권장, 속도/정확도 균형 (190MB)</item>
+        <item>medium — 정확, 느림 (540MB)</item>
+        <item>large-v3-turbo — 가장 정확, 느림 (570MB)</item>
+    </string-array>
+    <string-array name="model_values">
+        <item>tiny</item>
+        <item>base</item>
+        <item>small</item>
+        <item>medium</item>
+        <item>turbo</item>
+    </string-array>
+    <string-array name="translator_entries">
+        <item>구글 번역 (무료, 키 불필요)</item>
+        <item>Claude AI (문맥 고려, API 키 필요)</item>
+        <item>번역 안 함 (원어 자막만)</item>
+    </string-array>
+    <string-array name="translator_values">
+        <item>google</item>
+        <item>claude</item>
+        <item>none</item>
+    </string-array>
+    <string-array name="claude_model_entries">
+        <item>Claude Opus 5.5 (최고 품질)</item>
+        <item>Claude Sonnet 5.5 (빠르고 저렴)</item>
+        <item>Claude Haiku 5.5 (가장 저렴)</item>
+    </string-array>
+    <string-array name="claude_model_values">
+        <item>claude-opus-5-5</item>
+        <item>claude-sonnet-5-5</item>
+        <item>claude-haiku-5-5</item>
+    </string-array>
+    <string-array name="effort_entries">
+        <item>빠르게 (권장)</item>
+        <item>균형</item>
+        <item>꼼꼼하게 (느림)</item>
+    </string-array>
+    <string-array name="effort_values">
+        <item>low</item>
+        <item>medium</item>
+        <item>high</item>
+    </string-array>
+</resources>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">한글자막 플레이어</string>
+    <string name="settings_title">설정</string>
+    <string name="open_video">동영상 열기</string>
+    <string name="home_desc">동영상을 재생하면 음성을 알아듣고 한국어 자막을 만들어 화면에 보여 주고 자동으로 저장합니다.</string>
+    <string name="recent">최근에 본 동영상</string>
+    <string name="no_recent">아직 재생한 동영상이 없습니다.</string>
+    <string name="back">뒤로</string>
+    <string name="subtitle_list">자막 목록</string>
+    <string name="more">더 보기</string>
+</resources>

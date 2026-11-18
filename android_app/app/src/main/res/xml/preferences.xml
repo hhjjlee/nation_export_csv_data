@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory app:title="음성 인식">
+        <ListPreference
+            app:defaultValue="small"
+            app:entries="@array/model_entries"
+            app:entryValues="@array/model_values"
+            app:key="model"
+            app:title="인식 모델"
+            app:useSimpleSummaryProvider="true" />
+        <ListPreference
+            app:defaultValue="auto"
+            app:entries="@array/language_entries"
+            app:entryValues="@array/language_values"
+            app:key="language"
+            app:title="원본 언어"
+            app:useSimpleSummaryProvider="true" />
+        <Preference
+            app:key="model_storage"
+            app:title="내려받은 모델"
+            app:summary="모델 파일 정리" />
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="번역">
+        <ListPreference
+            app:defaultValue="google"
+            app:entries="@array/translator_entries"
+            app:entryValues="@array/translator_values"
+            app:key="translator"
+            app:title="번역 방식"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:key="claude_api_key"
+            app:title="Claude API 키"
+            app:summary="console.anthropic.com 에서 발급 (사용량 과금)" />
+        <ListPreference
+            app:defaultValue="claude-opus-5-5"
+            app:entries="@array/claude_model_entries"
+            app:entryValues="@array/claude_model_values"
+            app:key="claude_model"
+            app:title="Claude 모델"
+            app:useSimpleSummaryProvider="true" />
+        <ListPreference
+            app:defaultValue="low"
+            app:entries="@array/effort_entries"
+            app:entryValues="@array/effort_values"
+            app:key="claude_effort"
+            app:title="Claude 번역 방식"
+            app:useSimpleSummaryProvider="true" />
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="저장">
+        <Preference
+            app:key="save_folder"
+            app:title="자막 저장 폴더" />
+        <SwitchPreferenceCompat
+            app:defaultValue="true"
+            app:key="save_source"
+            app:summary="예: 영상이름.en.srt"
+            app:title="원어 자막도 저장" />
+        <SwitchPreferenceCompat
+            app:defaultValue="false"
+            app:key="save_bilingual"
+            app:summary="예: 영상이름.ko+en.srt"
+            app:title="이중 자막(한국어+원문)도 저장" />
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="재생/표시">
+        <SwitchPreferenceCompat
+            app:defaultValue="true"
+            app:key="auto_generate"
+            app:title="동영상을 열면 자동으로 자막 만들기" />
+        <SwitchPreferenceCompat
+            app:defaultValue="false"
+            app:key="show_source"
+            app:title="화면에 원문도 함께 표시" />
+        <SwitchPreferenceCompat
+            app:defaultValue="false"
+            app:key="subtitle_background"
+            app:title="자막 뒤에 반투명 배경" />
+        <SeekBarPreference
+            android:max="40"
+            app:defaultValue="22"
+            app:key="subtitle_size"
+            app:min="14"
+            app:showSeekBarValue="true"
+            app:title="자막 크기"
+            xmlns:android="http://schemas.android.com/apk/res/android" />
+    </PreferenceCategory>
+</PreferenceScreen>
