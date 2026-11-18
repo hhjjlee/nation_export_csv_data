@@ -1,15 +1,16 @@
 name: Android APK (한글자막 플레이어)
 
 on:
+  # 같은 저장소의 PR 브랜치는 push로 이미 빌드되므로 pull_request 이벤트는 쓰지 않는다 (중복 빌드 방지)
   push:
     paths:
       - "android_app/**"
       - ".github/workflows/android.yml"
-  pull_request:
-    paths:
-      - "android_app/**"
-      - ".github/workflows/android.yml"
   workflow_dispatch:
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
