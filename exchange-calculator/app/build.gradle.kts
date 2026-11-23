@@ -39,7 +39,14 @@ android {
     testOptions {
         unitTests {
             isIncludeAndroidResources = true
-            all { it.systemProperty("roborazzi.test.record", "true") }
+            all {
+                it.systemProperty("roborazzi.test.record", "true")
+                // 네트워크가 막힌 환경: 미리 받아 둔 android-all jar 폴더를 지정하면 오프라인으로 실행한다.
+                System.getenv("ROBOLECTRIC_DEPS_DIR")?.let { dir ->
+                    it.systemProperty("robolectric.offline", "true")
+                    it.systemProperty("robolectric.dependency.dir", dir)
+                }
+            }
         }
     }
 

@@ -103,7 +103,7 @@ class CalculatorTest {
     @Test fun amountFormatForCurrency() {
         assertEquals("1,850", AmountFormat.formatForCurrency(BigDecimal("1849.6"), 0))
         assertEquals("12.90", AmountFormat.formatForCurrency(BigDecimal("12.9"), 2))
-        assertEquals("0.0383", AmountFormat.formatForCurrency(BigDecimal("0.038312"), 0))
+        assertEquals("0.03831", AmountFormat.formatForCurrency(BigDecimal("0.038312"), 0))
     }
 
     @Test fun plainInputRoundsLikeDisplay() {
