@@ -33,7 +33,7 @@ import java.math.BigDecimal
 
 /**
  * 갤럭시 S25 화면 크기(384 x 832 dp)로 각 화면을 그려 PNG 로 저장한다.
- * 결과: app/screenshots/*.png
+ * 결과: app/screenshots 폴더의 PNG 파일
  * (테스트용 가짜 환율이며 실제 값이 아님)
  */
 @RunWith(RobolectricTestRunner::class)
