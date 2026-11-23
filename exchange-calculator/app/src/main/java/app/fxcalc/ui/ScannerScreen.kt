@@ -125,7 +125,8 @@ fun ScannerScreen(
     val context = LocalContext.current
     var granted by remember {
         mutableStateOf(
-            ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+            cameraEnabled &&
+                ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
         )
     }
     var asked by remember { mutableStateOf(false) }

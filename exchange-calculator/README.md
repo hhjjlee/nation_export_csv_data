@@ -34,7 +34,8 @@
 cd exchange-calculator
 echo "sdk.dir=/path/to/android-sdk" > local.properties
 ./gradlew assembleRelease          # → app/build/outputs/apk/release/app-release.apk
-./gradlew testDebugUnitTest        # 단위 테스트 + 화면 스크린샷(app/screenshots/)
+./gradlew testDebugUnitTest        # 단위 테스트
+./gradlew recordPaparazziDebug     # 단위 테스트 + 화면 스크린샷(app/src/test/snapshots/images/)
 ```
 
 ## 구성

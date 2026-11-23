@@ -2,6 +2,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
+    id("app.cash.paparazzi")
 }
 
 android {
@@ -36,20 +37,6 @@ android {
 
     buildFeatures { compose = true }
 
-    testOptions {
-        unitTests {
-            isIncludeAndroidResources = true
-            all {
-                it.systemProperty("roborazzi.test.record", "true")
-                // 네트워크가 막힌 환경: 미리 받아 둔 android-all jar 폴더를 지정하면 오프라인으로 실행한다.
-                System.getenv("ROBOLECTRIC_DEPS_DIR")?.let { dir ->
-                    it.systemProperty("robolectric.offline", "true")
-                    it.systemProperty("robolectric.dependency.dir", dir)
-                }
-            }
-        }
-    }
-
     packaging {
         resources { excludes += "/META-INF/{AL2.0,LGPL2.1}" }
     }
@@ -58,7 +45,6 @@ android {
 dependencies {
     val composeBom = platform("androidx.compose:compose-bom:2024.12.01")
     implementation(composeBom)
-    testImplementation(composeBom)
 
     implementation("androidx.core:core-ktx:1.15.0")
     implementation("androidx.activity:activity-compose:1.9.3")
@@ -86,8 +72,7 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 
     testImplementation("junit:junit:4.13.2")
-    testImplementation("org.robolectric:robolectric:4.14.1")
-    testImplementation("androidx.compose.ui:ui-test-junit4")
-    testImplementation("io.github.takahirom.roborazzi:roborazzi:1.39.0")
-    testImplementation("io.github.takahirom.roborazzi:roborazzi-compose:1.39.0")
+    // 단위 테스트(JVM)에서 org.json 실제 구현을 쓰기 위해
+    testImplementation("org.json:json:20250107")
+    // 화면 스크린샷 테스트: ./gradlew recordPaparazziDebug
 }

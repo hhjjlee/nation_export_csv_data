@@ -6,15 +6,10 @@ import app.fxcalc.data.RatesRepository
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
-import org.robolectric.annotation.Config
 import java.math.BigDecimal
 import java.math.RoundingMode
 
-// org.json 은 안드로이드 구현이 필요해서 Robolectric 으로 돌린다.
-@RunWith(RobolectricTestRunner::class)
-@Config(sdk = [34])
+// org.json 은 테스트 의존성(org.json:json)의 실제 구현으로 동작한다.
 class RatesParseTest {
     private val erApi = """
         {"result":"success","provider":"https://www.exchangerate-api.com","time_last_update_unix":1763856151,
