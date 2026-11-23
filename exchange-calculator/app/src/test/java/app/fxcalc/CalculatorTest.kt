@@ -94,7 +94,8 @@ class CalculatorTest {
     @Test fun amountFormat() {
         assertEquals("182,580.47", AmountFormat.format(BigDecimal("182580.4712")))
         assertEquals("135.73", AmountFormat.format(BigDecimal("135.7299")))
-        assertEquals("100", AmountFormat.format(BigDecimal("100.00")))
+        assertEquals("100.00", AmountFormat.format(BigDecimal("100")))
+        assertEquals("175.10", AmountFormat.format(BigDecimal("175.1")))
         assertEquals("0.000038", AmountFormat.format(BigDecimal("0.0000380012")))
         assertEquals("0.5432", AmountFormat.format(BigDecimal("0.54321")))
         assertEquals("0", AmountFormat.format(BigDecimal.ZERO))

@@ -85,7 +85,7 @@ fun ManageScreen(
             Text("통화 관리", color = Fx.TextPrimary, fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
         }
         Text(
-            "오른쪽 ≡ 를 끌어서 순서를 바꿀 수 있어요 · 최소 2개, 최대 12개",
+            "≡ 를 끌어서 순서 변경 · 통화는 2~12개",
             color = Fx.TextMuted,
             fontSize = 13.sp,
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),

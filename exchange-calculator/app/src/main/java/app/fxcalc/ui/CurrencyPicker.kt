@@ -84,7 +84,7 @@ fun CurrencyPickerContent(
             value = query,
             onValueChange = { query = it },
             singleLine = true,
-            placeholder = { Text("통화 코드 또는 이름 (예: 베트남, VND)") },
+            placeholder = { Text("코드·이름 검색 (예: 베트남, VND)", maxLines = 1) },
             leadingIcon = { Icon(Icons.Rounded.Search, null) },
             trailingIcon = {
                 if (query.isNotEmpty()) IconButton(onClick = { query = "" }) { Icon(Icons.Rounded.Close, "지우기") }

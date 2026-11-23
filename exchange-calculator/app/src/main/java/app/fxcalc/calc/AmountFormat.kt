@@ -19,8 +19,11 @@ object AmountFormat {
         return (leadingZeros + SIGNIFICANT_FOR_SMALL).coerceIn(2, MAX_SCALE)
     }
 
-    /** 변환기 목록에 표시하는 금액 (예: 182,580.47) */
-    fun format(v: BigDecimal): String = format(v, displayScale(v))
+    /** 변환기 목록에 표시하는 금액 (예: 182,580.47). 1 이상은 항상 소수 2자리로 맞춘다. */
+    fun format(v: BigDecimal): String {
+        val scale = displayScale(v)
+        return format(v, scale, minFraction = if (v.abs() >= BigDecimal.ONE) 2 else 0)
+    }
 
     /**
      * 통화 기본 소수 자릿수에 맞춰 표시 (예: KRW 1,850 / USD 12.99).
